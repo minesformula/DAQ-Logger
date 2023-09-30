@@ -4,21 +4,10 @@
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
 
-void obtainTelemetry(){
-  while(!Serial1);
-
-  while(Serial1.available() < 1);
-
-  if (Serial1.read() == '?'){
-    Serial1.write('!');
-  }
-  while(Serial1.read() != 'n');
-}
-
 void transmit(String source, String type, String units, String value){
-  String temp = source + " " + type + " " + units + " " + value + "\n";
+  String temp = source + " " + type + " " + units + " " + value;
+  Serial2.println(temp);
 
-  Serial1.write(temp.c_str(), temp.length());
 }
 
 void setRPM(uint16_t value){
@@ -100,7 +89,10 @@ void receive_can_updates(const CAN_message_t &msg){
 
 void setup()
 {
-  Serial1.begin(57600);
+  Serial.begin(9600);
+  Serial2.begin(57600);
+
+  while(!Serial2);
 
   Can0.begin();
   Can0.setBaudRate(1000000);
@@ -110,12 +102,11 @@ void setup()
   Can0.onReceive(receive_can_updates);
   Can0.mailboxStatus();
 
-  obtainTelemetry();
-
   createLog();
 }
 
 void loop()
 {
   Can0.events();
+  delay(5000);
 }
