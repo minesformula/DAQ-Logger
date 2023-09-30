@@ -34,3 +34,18 @@ void writeToLog(char input[100])
     writeFile.println();
     writeFile.close();
 }
+
+void writeMsg(const CAN_message_t &msg){
+    File writeFile = SD.open(logFile, FILE_WRITE);
+    writeFile.print("ID: ");
+    writeFile.print(msg.id);
+
+    writeFile.print("BUF: ");
+    for(int i = 0; i < 8; i++){
+        writeFile.print(msg.buf[i]);
+        writeFile.print(" ");
+    }
+
+    writeFile.println();
+    writeFile.close();
+}
