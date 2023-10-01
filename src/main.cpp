@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
 
-FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
+FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can1;
 
 void transmit(String source, String type, String units, String value){
   String temp = source + " " + type + " " + units + " " + value;
@@ -27,7 +27,7 @@ void setWaterPumpValue(uint16_t value){
 }
 
 void setFuelPumpValue(uint16_t value){
-  transmit("ECU", "WaterPump", "IDK", String(value, DEC));
+  transmit("ECU", "FuelPump", "IDK", String(value, DEC));
 }
 
 void setVoltage(uint16_t value){
@@ -94,19 +94,19 @@ void setup()
 
   while(!Serial2);
 
-  Can0.begin();
-  Can0.setBaudRate(1000000);
-  Can0.setMaxMB(16);
-  Can0.enableFIFO();
-  Can0.enableFIFOInterrupt();
-  Can0.onReceive(receive_can_updates);
-  Can0.mailboxStatus();
+  Can1.begin();
+  Can1.setBaudRate(1000000);
+  Can1.setMaxMB(16);
+  Can1.enableFIFO();
+  Can1.enableFIFOInterrupt();
+  Can1.onReceive(receive_can_updates);
+  Can1.mailboxStatus();
 
   createLog();
 }
 
 void loop()
 {
-  Can0.events();
+  Can1.events();
   delay(5000);
 }
