@@ -1,69 +1,62 @@
 #ifndef DAQLOGGER_H
 #define DAQLOGGER_H
 
-#include <map>
-
-#include <SDCard.h>
 #include <FlexCAN_T4.h>
-#include <CANConfig.h>
+#include <Arduino.h>
+
+#include <SDCard.hpp>
+#include <Sensor.hpp>
 
 template <CAN_DEV_TABLE T>
 class DAQLogger {
     public:
-        DAQLogger(CANLINES);
+        DAQLogger();
         void update();
 
-    private:
-        void processUpdate(CAN_message_t &msg);
+        bool addSensor(Sensor::SensorTypes type, uint8_t number, int CANID);
 
-        SDCard* SD;
+    private:
+
+        SDCard* card;
         FlexCAN_T4<T, RX_SIZE_256, TX_SIZE_16> can;
 
-        CANLINES CANLine;
-
-        SENSORS sensorList[1285] = {UNKNOWN};
+        uint8_t mailBox;
 };
 
 template <CAN_DEV_TABLE T>
-DAQLogger<T>::DAQLogger(CANLINES CANLine){
-    this->SD = new SDCard("logFile");
-    this->CANLine = CANLine;
-
-    if(CANLine == ECU){
-        sensorList[280] = SENSORS::ECU_RPM_WATERTEMP;
-        sensorList[281] = SENSORS::ECU_GEAR;
-        sensorList[1280] = SENSORS::ECU_VOLTAGE;
-        sensorList[1284] = SENSORS::ECU_PUMPS_FAN;
-    }
+DAQLogger<T>::DAQLogger(){
+    this->card = new SDCard("logFile");
 
     this->can.begin();
     this->can.setBaudRate(1000000);
+    this->can.setMaxMB(64);
     this->can.enableFIFO();
-}
+    this->can.enableFIFOInterrupt();
+    this->can.setMBFilter(REJECT_ALL);
+    this->can.mailboxStatus();
 
-template <CAN_DEV_TABLE T>
-void DAQLogger<T>::processUpdate(CAN_message_t &msg){
-    MSG liveMSG;
-
-    if (sensorList[msg.id] == UNKNOWN) return;
-
-    liveMSG.sensor = sensorList[msg.id];
-    liveMSG.buf = msg.buf;
-    liveMSG.timestamp = millis()/1000;
-
-    Serial2.write(static_cast<char*>(static_cast<void*>(&liveMSG)), sizeof(liveMSG));
-
-    this->SD->writeBytes(static_cast<char*>(static_cast<void*>(&liveMSG)), sizeof(liveMSG));
-    Serial2.flush();
+    Serial2.begin(57600); //Serial 2 is the telemetry radio. Baud Rate is 57600
 }
 
 template <CAN_DEV_TABLE T>
 void DAQLogger<T>::update(){
-    CAN_message_t msg;
+    can.events();
+}
 
-    while (this->can.readFIFO(msg)){
-        processUpdate(msg);
+template <CAN_DEV_TABLE T>
+bool DAQLogger<T>::addSensor(Sensor::SensorTypes type, uint8_t number, int CANID){
+    if(mailBox == 64){
+        Serial.println("Error can't add sensor; Too few mailboxes");
+        return false;
     }
+
+    Sensor* temp = new Sensor(type, number, card);
+
+    this->can.setMBFilter(mailBox, CANID);
+    this->can.onReceive(mailBox, temp->writeMessage);
+    mailBox++;
+
+    return true;
 }
 
 #endif
