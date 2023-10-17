@@ -3,52 +3,77 @@
 
 #include <Arduino.h>
 #include <FlexCan_T4.h>
+#include <CANConfig.h>
+
 #include <SD.h>
 #include <SPI.h>
 #include <stdio.h>
 
 class SDCard {
     public:
-        SDCard(String filename);
+        SDCard();
 
+        void initialize();
         void writeToLog(String input);
-        void writeBytes(char* buf, unsigned int length);
+        void writeMsg(LogMsg msg, unsigned int length);
 
+        static bool initialized;
 
     private:
-        String filename;
-
-        void createLog(String input);
+        char filename[100];
 };
 
-SDCard::SDCard(String filename){
-    createLog(filename);
+bool SDCard::initialized = false;
+
+
+
+SDCard::SDCard(){
+    initialize();
 }
 
-// Creating a new log.txt file. Should not overwrite other log files.
-void SDCard::createLog(String input)
-{
-    int i = 0;
-    while (SD.exists(input.c_str()+String(i)))
-    {
-        i++;
+void SDCard::initialize(){
+    if(!SD.begin(BUILTIN_SDCARD)){
+        Serial.println("SD Card Initialization Failed");
+        return;
     }
-    this->filename = input.c_str()+String(i);
+
+    int i = 0;
+    sprintf(filename, "logFile0.data");
+
+    while (SD.exists(filename)){
+        i++;
+
+        sprintf(filename, "logFile%d.data", i);
+    }
+    sprintf(filename, "logFile%d.data", i);
+
+    Serial.println("SD Card Initialized");
+    SDCard::initialized = true;
 }
 
-// Should write an input to a file. Possibly an issue with file not being opened due to code structure.
 void SDCard::writeToLog(String input)
 {
-    File writeFile = SD.open(filename.c_str(), FILE_WRITE);
+
+    Serial.println(input);
+    File writeFile = SD.open(filename, FILE_WRITE);
     
     writeFile.print(input);
 
     writeFile.close();
 }
 
-void SDCard::writeBytes(char* buf, unsigned int length){
-    File writeFile = SD.open(filename.c_str(), FILE_WRITE);
-    writeFile.write(buf, length);
+void SDCard::writeMsg(LogMsg msg, unsigned int length){
+    File writeFile = SD.open(filename, FILE_WRITE);
+
+   Serial.print(filename);
+   Serial.print(" ");
+   Serial.print(sizeof(LogMsg));
+   Serial.print(": ");
+
+    uint8_t* structPtr = (uint8_t*) &msg;
+    for (byte i = 0; i < sizeof(LogMsg); i++)  writeFile.write(*structPtr++);
+    for (byte i = 0; i < sizeof(LogMsg); i++)  Serial.write(*structPtr++);
+    Serial.println();
     writeFile.close();
 }
 
