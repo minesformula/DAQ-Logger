@@ -15,7 +15,7 @@ class SDCard {
 
         void initialize();
         void writeToLog(String input);
-        void writeMsg(LogMsg msg, unsigned int length);
+        void writeMsg(LogMsg msg);
 
         static bool initialized;
 
@@ -62,18 +62,15 @@ void SDCard::writeToLog(String input)
     writeFile.close();
 }
 
-void SDCard::writeMsg(LogMsg msg, unsigned int length){
+void SDCard::writeMsg(LogMsg msg){
     File writeFile = SD.open(filename, FILE_WRITE);
 
-   Serial.print(filename);
-   Serial.print(" ");
-   Serial.print(sizeof(LogMsg));
-   Serial.print(": ");
+    uint8_t* temp = (uint8_t*)&msg;
 
-    uint8_t* structPtr = (uint8_t*) &msg;
-    for (byte i = 0; i < sizeof(LogMsg); i++)  writeFile.write(*structPtr++);
-    for (byte i = 0; i < sizeof(LogMsg); i++)  Serial.write(*structPtr++);
-    Serial.println();
+    for (int i = 0; i < sizeof(LogMsg); i++){
+        writeFile.write(temp[i]);
+    }
+
     writeFile.close();
 }
 

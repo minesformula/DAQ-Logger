@@ -74,16 +74,19 @@ void DAQLogger<T>::onReceive(const CAN_message_t &msg){
         sensors[msg.id].buf[i] = msg.buf[i];
     }
 
-    sensors[msg.id].timestamp = millis();
-
-    char* temp = static_cast<char*>(static_cast<void*>(&sensors[msg.id]));
-
-    card->writeMsg(sensors[msg.id], sizeof(LogMsg));
+    uint8_t* temp = (uint8_t) &sensors[msg.id];
 
     if(sensors[msg.id].type != Sensors::UNKNOWN){
-        Serial2.write(temp, sizeof(sensors[msg.id]));
+        for (int i = 0; i < 10; i++){
+            Serial2.write(temp[i]);
+        }
         Serial2.write('\n');
     }
+
+    sensors[msg.id].timestamp = millis();
+    sensors[msg.id].CANID = msg.id;
+
+    card->writeMsg(sensors[msg.id]);
 }
 
 #endif

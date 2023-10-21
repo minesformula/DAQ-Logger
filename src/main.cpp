@@ -15,6 +15,10 @@ void setup()
 
   ECULine = new DAQLogger<CAN1>();
   ECULine->addSensor(Sensors::ECU_VOLTAGE, 1, 1280);
+  ECULine->addSensor(Sensors::ECU_GEAR, 1, 281);
+  ECULine->addSensor(Sensors::ECU_RPM_WATERTEMP, 1, 280);
+  ECULine->addSensor(Sensors::ECU_RPM_WATERTEMP, 1, 280);
+  ECULine->addSensor(Sensors::ECU_PUMPS_FAN, 1, 1284);
 }
 
 void loop()

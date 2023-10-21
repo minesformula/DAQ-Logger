@@ -17,6 +17,7 @@ struct LogMsg {
     uint8_t sensorNum;
     uint8_t buf[8];
     uint32_t timestamp;
+    uint16_t CANID;
 };
 
 #endif
