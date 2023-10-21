@@ -74,7 +74,7 @@ void DAQLogger<T>::onReceive(const CAN_message_t &msg){
         sensors[msg.id].buf[i] = msg.buf[i];
     }
 
-    uint8_t* temp = (uint8_t) &sensors[msg.id];
+    uint8_t* temp = (uint8_t*) &sensors[msg.id];
 
     if(sensors[msg.id].type != Sensors::UNKNOWN){
         for (int i = 0; i < 10; i++){

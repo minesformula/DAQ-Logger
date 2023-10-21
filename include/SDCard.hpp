@@ -67,7 +67,7 @@ void SDCard::writeMsg(LogMsg msg){
 
     uint8_t* temp = (uint8_t*)&msg;
 
-    for (int i = 0; i < sizeof(LogMsg); i++){
+    for (unsigned int i = 0; i < sizeof(LogMsg); i++){
         writeFile.write(temp[i]);
     }
 
