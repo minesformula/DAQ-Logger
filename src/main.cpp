@@ -14,10 +14,13 @@ void setup() {
   DAQLine.SDLoggingMode();
   DAQLine.enableDynamicSensors();
   DAQLine.enableLiveTelemetry(Serial2);
+
   DAQLine.addSensor(1280, BATTERY_STATUS, 0);
   DAQLine.addSensor(280, ENGINE_STATUS, 0);
   DAQLine.addSensor(281, GEAR_STATUS, 0);
   DAQLine.addSensor(1284, PUMP_STATUS, 0);
+  DAQLine.addSensor(1600, THROTTLE_STATUS, 0);
+  DAQLine.addSensor(1604, ENGINE_RUNTIME, 0);
 }
 
 void loop() {
