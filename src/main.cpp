@@ -19,10 +19,11 @@ void setup() {
   DAQLine.addSensor(1280, BATTERY_STATUS, 0);
   DAQLine.addSensor(280, ENGINE_STATUS, 0);
   DAQLine.addSensor(281, GEAR_STATUS, 0);
-  DAQLine.addSensor(1088, BRAKE_STATUS, 0);
   DAQLine.addSensor(1284, PUMP_STATUS, 0);
   DAQLine.addSensor(1600, THROTTLE_STATUS, 0);
   DAQLine.addSensor(1604, ENGINE_RUNTIME, 0);
+  DAQLine.addSensor(1609, ENGINE_TEMPERATURE, 0);
+  DAQLine.addSensor(1621, BRAKE_STATUS, 0);
 }
 
 void loop() {
@@ -30,6 +31,7 @@ void loop() {
 
   if (millis()-prevTime1 > 5000){
     MF::SensorFactory::sendReadOut(Serial2);
+    DAQLine.flushSD();
     prevTime1 = millis();
   }
 
