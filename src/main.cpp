@@ -11,10 +11,18 @@ void setup() {
   Serial.begin(9600); 
   Serial2.begin(57600);
 
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);                             
+
+  digitalWrite(2, 1);
+  digitalWrite(3, 1);
+  digitalWrite(4, 1);
+
   DAQLine.begin();
   DAQLine.SDLoggingMode();
   DAQLine.enableDynamicSensors();
-  //DAQLine.enableLiveTelemetry(Serial2);
+  DAQLine.enableLiveTelemetry(Serial2);
 
   DAQLine.addSensor(1280, BATTERY_STATUS, 0);
   DAQLine.addSensor(280, ENGINE_STATUS, 0);
@@ -33,10 +41,5 @@ void loop() {
     MF::SensorFactory::sendReadOut(Serial2);
     DAQLine.flushSD();
     prevTime1 = millis();
-  }
-
-  if (millis()-prevTime2 > 250){
-    DAQLine.sendReadOut(Serial2);
-    prevTime2 = millis();
   }
 }
