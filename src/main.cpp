@@ -1,27 +1,45 @@
 #include <Arduino.h>
-#include <FlexCAN_T4.h>
-#include <CANConfig.h>
+#include <DAQLine.hpp>
+#include <ECUSensors.hpp>
+#include <SensorDefinitions.h>
 
-#include <DAQLogger.hpp>
-#include <SD.h>
-#include <SPI.h>
+MF::DAQLine<CAN1> DAQLine;
+int prevTime1 = 0;
+int prevTime2 = 0;
 
-DAQLogger<CAN1>* ECULine;
+void setup() {
+  Serial.begin(9600); 
+  Serial2.begin(57600);
 
-void setup()
-{
-  Serial.begin(9600);
-  Serial2.begin(57600); //Serial 2 is the telemetry radio. Baud Rate is 57600
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);                             
 
-  ECULine = new DAQLogger<CAN1>();
-  ECULine->addSensor(Sensors::ECU_VOLTAGE, 1, 1280);
-  ECULine->addSensor(Sensors::ECU_GEAR, 1, 281);
-  ECULine->addSensor(Sensors::ECU_RPM_WATERTEMP, 1, 280);
-  ECULine->addSensor(Sensors::ECU_RPM_WATERTEMP, 1, 280);
-  ECULine->addSensor(Sensors::ECU_PUMPS_FAN, 1, 1284);
+  digitalWrite(2, 1);
+  digitalWrite(3, 1);
+  digitalWrite(4, 1);
+
+  DAQLine.begin();
+  DAQLine.SDLoggingMode();
+  DAQLine.enableDynamicSensors();
+  DAQLine.enableLiveTelemetry(Serial2);
+
+  DAQLine.addSensor(1280, BATTERY_STATUS, 0);
+  DAQLine.addSensor(280, ENGINE_STATUS, 0);
+  DAQLine.addSensor(281, GEAR_STATUS, 0);
+  DAQLine.addSensor(1284, PUMP_STATUS, 0);
+  DAQLine.addSensor(1600, THROTTLE_STATUS, 0);
+  DAQLine.addSensor(1604, ENGINE_RUNTIME, 0);
+  DAQLine.addSensor(1609, ENGINE_TEMPERATURE, 0);
+  DAQLine.addSensor(1621, BRAKE_STATUS, 0);
 }
 
-void loop()
-{
-  ECULine->update();
+void loop() {
+  DAQLine.update();
+
+  if (millis()-prevTime1 > 5000){
+    MF::SensorFactory::sendReadOut(Serial2);
+    DAQLine.flushSD();
+    prevTime1 = millis();
+  }
 }
