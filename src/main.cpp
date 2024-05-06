@@ -9,7 +9,7 @@ int prevTime1 = 0;
 int prevTime2 = 0;
 
 void setup() {
-  //Serial.begin(9600); 
+  Serial.begin(9600);
   Serial2.begin(57600);
   SD.begin(BUILTIN_SDCARD);
 
@@ -23,11 +23,11 @@ void setup() {
 
   ECULine.addSensor(1280, BATTERY_STATUS, 0);
   ECULine.addSensor(280, ENGINE_STATUS, 0);
-  ECULine.addSensor(281, GEAR_STATUS, 0);
   ECULine.addSensor(1284, PUMP_STATUS, 0);
   ECULine.addSensor(1600, THROTTLE_STATUS, 0);
   ECULine.addSensor(1604, ENGINE_RUNTIME, 0);
   ECULine.addSensor(1609, ENGINE_TEMPERATURE, 0);
+  ECULine.addSensor(1613, GEAR_STATUS, 0);
   ECULine.addSensor(1621, BRAKE_STATUS, 0);
 
   DAQLine.addSensor(1, ACCELEROMETER, 0);
@@ -48,10 +48,14 @@ void loop() {
   ECULine.update();
   DAQLine.update();
 
-  if (millis()-prevTime1 > 5000){
-    MF::SensorFactory::sendReadOut(Serial2);
+  if (millis()-prevTime2 > 500){
     ECULine.flushSD();
     DAQLine.flushSD();
+    prevTime2 = millis();
+  }
+
+  if (millis()-prevTime1 > 5000){
+    MF::SensorFactory::sendReadOut(Serial2);
     prevTime1 = millis();
   }
 }
